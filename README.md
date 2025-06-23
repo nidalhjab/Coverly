@@ -2,6 +2,7 @@
 
 A full-featured web application that allows users to design and customize their own mobile phone cases. Users can choose their phone model, upload a personal photo or design, apply filters/effects, and preview the final design.
 
+## live view: https://coverly-delta.vercel.app/
 
 ---
 
