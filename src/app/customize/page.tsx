@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
 
+// Note: Since this is a client component, we'll handle SEO via document manipulation
+// For better SEO, consider converting parts to server components or use Next.js Head
+
 interface DeviceModel {
   brand: string;
   models: string[];
