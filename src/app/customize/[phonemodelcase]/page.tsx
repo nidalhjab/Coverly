@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams, useParams } from 'next/navigation';
 import Image from 'next/image';
 
+
 interface ImageAdjustments {
   contrast: number;
   brightness: number;
