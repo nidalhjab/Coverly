@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Image from 'next/image';
+import LoadingButton from '@/components/LoadingButton';
 
 
 interface DeviceModel {
@@ -73,6 +74,7 @@ export default function CustomizePage() {
   const [cameraStream, setCameraStream] = useState<MediaStream | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [capturedPhoto, setCapturedPhoto] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   // Setup video stream when camera is active
   useEffect(() => {
@@ -194,36 +196,42 @@ export default function CustomizePage() {
     stopCamera();
   };
 
-  const handleNext = () => {
+  const handleNext = async () => {
     if (currentStep === 'model' && selectedModel) {
       setCurrentStep('photo');
     } else if (currentStep === 'photo' && selectedPhoto) {
-      const modelSlug = selectedModel.toLowerCase().replace(/\s+/g, '-');
+      setIsLoading(true);
       
-      // Store image data in sessionStorage to persist across refreshes
-      if (selectedPhoto === 'uploaded' && uploadedPhoto) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          const dataUrl = e.target?.result as string;
-          sessionStorage.setItem('customCase_imageData', dataUrl);
-          sessionStorage.setItem('customCase_imageType', 'uploaded');
-          router.push(`/customize/${modelSlug}?photo=custom`);
-        };
-        reader.readAsDataURL(uploadedPhoto);
-      } else if (selectedPhoto === 'camera' && capturedPhoto) {
-        // Convert blob URL to data URL for persistence
-        fetch(capturedPhoto)
-          .then(res => res.blob())
-          .then(blob => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const dataUrl = e.target?.result as string;
-              sessionStorage.setItem('customCase_imageData', dataUrl);
-              sessionStorage.setItem('customCase_imageType', 'camera');
-              router.push(`/customize/${modelSlug}?photo=custom`);
-            };
-            reader.readAsDataURL(blob);
-          });
+      try {
+        const modelSlug = selectedModel.toLowerCase().replace(/\s+/g, '-');
+        
+        // Store image data in sessionStorage to persist across refreshes
+        if (selectedPhoto === 'uploaded' && uploadedPhoto) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const dataUrl = e.target?.result as string;
+            sessionStorage.setItem('customCase_imageData', dataUrl);
+            sessionStorage.setItem('customCase_imageType', 'uploaded');
+            router.push(`/customize/${modelSlug}?photo=custom`);
+          };
+          reader.readAsDataURL(uploadedPhoto);
+        } else if (selectedPhoto === 'camera' && capturedPhoto) {
+          // Convert blob URL to data URL for persistence
+          const res = await fetch(capturedPhoto);
+          const blob = await res.blob();
+          
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const dataUrl = e.target?.result as string;
+            sessionStorage.setItem('customCase_imageData', dataUrl);
+            sessionStorage.setItem('customCase_imageType', 'camera');
+            router.push(`/customize/${modelSlug}?photo=custom`);
+          };
+          reader.readAsDataURL(blob);
+        }
+      } catch (error) {
+        console.error('Error processing image:', error);
+        setIsLoading(false);
       }
     }
   };
@@ -454,17 +462,18 @@ export default function CustomizePage() {
               >
                 Back
               </button>
-              <button
+              <LoadingButton
                 className={`px-8 py-3 rounded-lg font-semibold transition-colors ${
-                  selectedPhoto 
+                  selectedPhoto && !isLoading
                     ? 'bg-purple-600 text-white hover:bg-purple-700'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'
                 }`}
                 onClick={handleNext}
                 disabled={!selectedPhoto}
+                isLoading={isLoading}
               >
                 Continue to Design
-              </button>
+              </LoadingButton>
             </div>
           </div>
         )}
