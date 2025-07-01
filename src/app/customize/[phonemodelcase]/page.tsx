@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSearchParams } from 'next/navigation';
+import { useSearchParams, useParams } from 'next/navigation';
+import Image from 'next/image';
 
 interface ImageAdjustments {
   contrast: number;
@@ -13,6 +14,7 @@ interface ImageAdjustments {
 export default function CaseCustomizationPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
+  const params = useParams();
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
@@ -23,11 +25,31 @@ export default function CaseCustomizationPage() {
     brightness: 100,
     fillMode: 'fit'
   });
+  const [actualImageSrc, setActualImageSrc] = useState<string | null>(null);
   const imageRef = useRef<HTMLImageElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedPhoto = searchParams.get('photo');
-  const phoneModel = decodeURIComponent(window.location.pathname.split('/').pop() || '');
+  const phoneModel = params.phonemodelcase as string;
+
+  // Load image from sessionStorage on component mount
+  useEffect(() => {
+    if (selectedPhoto === 'custom') {
+      const imageData = sessionStorage.getItem('customCase_imageData');
+      if (imageData) {
+        setActualImageSrc(imageData);
+      } else {
+        // No image data found, redirect back to customize page
+        router.push('/customize');
+      }
+    } else if (selectedPhoto) {
+      // Fallback to URL parameter (for backwards compatibility)
+      setActualImageSrc(selectedPhoto);
+    } else {
+      // No photo parameter, redirect back to customize page
+      router.push('/customize');
+    }
+  }, [selectedPhoto, router]);
 
   const handleMouseDown = (e: React.MouseEvent) => {
     setIsDragging(true);
@@ -50,6 +72,10 @@ export default function CaseCustomizationPage() {
   };
 
   const handleSubmit = () => {
+    // Clear stored image data since the design is complete
+    sessionStorage.removeItem('customCase_imageData');
+    sessionStorage.removeItem('customCase_imageType');
+    
     alert('Your custom case design has been submitted!');
     router.push('/');
   };
@@ -86,11 +112,12 @@ export default function CaseCustomizationPage() {
               backgroundColor: '#f5f5f5',
             }}
           >
-            {selectedPhoto && (
-              <img
+            {actualImageSrc && (
+              <Image
                 ref={imageRef}
-                src={selectedPhoto}
+                src={actualImageSrc}
                 alt="Selected design"
+                fill
                 className="absolute cursor-move"
                 style={{
                   transform: `translate(${position.x}px, ${position.y}px) scale(${scale}) rotate(${rotation}deg)`,
@@ -98,14 +125,13 @@ export default function CaseCustomizationPage() {
                   userSelect: 'none',
                   filter: `contrast(${imageAdjustments.contrast}%) brightness(${imageAdjustments.brightness}%)`,
                   objectFit: imageAdjustments.fillMode === 'fill' ? 'cover' : 'contain',
-                  width: '100%',
-                  height: '100%'
                 }}
                 onMouseDown={handleMouseDown}
                 onMouseMove={handleMouseMove}
                 onMouseUp={handleMouseUp}
                 onMouseLeave={handleMouseUp}
                 draggable={false}
+                unoptimized
               />
             )}
           </div>

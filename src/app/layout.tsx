@@ -21,32 +21,10 @@ export default function RootLayout({
         {/* Header */}
         <header className="bg-white shadow-sm">
           <nav className="container mx-auto px-6 py-4">
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center">
               <Link href="/" className="text-2xl font-bold text-purple-600">
                 Coverly
               </Link>
-              <div className="hidden md:flex items-center space-x-8">
-                <Link href="/customize" className="text-gray-600 hover:text-purple-600">
-                  Customize
-                </Link>
-                <Link href="/gallery" className="text-gray-600 hover:text-purple-600">
-                  Gallery
-                </Link>
-                <Link href="/about" className="text-gray-600 hover:text-purple-600">
-                  About
-                </Link>
-                <Link href="/contact" className="text-gray-600 hover:text-purple-600">
-                  Contact
-                </Link>
-              </div>
-              <div className="md:hidden">
-                {/* Mobile menu button - you'll need to implement the mobile menu functionality */}
-                <button className="text-gray-600">
-                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16" />
-                  </svg>
-                </button>
-              </div>
             </div>
           </nav>
         </header>
