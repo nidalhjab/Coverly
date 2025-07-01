@@ -5,8 +5,6 @@ import { useRouter } from 'next/navigation';
 import { useSearchParams, useParams } from 'next/navigation';
 import Image from 'next/image';
 
-// Note: Since this is a client component, SEO is handled via the layout
-// For dynamic SEO based on phone model, consider using generateMetadata in a server component
 
 interface ImageAdjustments {
   contrast: number;
